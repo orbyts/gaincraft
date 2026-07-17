@@ -1,0 +1,59 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          python-version: "3.14"
+          version: "0.11.16"
+
+      - name: Sync locked development environment
+        run: uv sync --locked --extra dev
+
+      - name: Build distributions
+        run: uv build
+
+      - name: Check distribution metadata
+        run: uv run --locked twine check dist/*
+
+      - name: Store distributions
+        uses: actions/upload-artifact@v6
+        with:
+          name: python-distributions
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: Publish distributions
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/gaincraft
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Retrieve distributions
+        uses: actions/download-artifact@v6
+        with:
+          name: python-distributions
+          path: dist/
+
+      - name: Publish to PyPI with trusted publishing
+        uses: pypa/gh-action-pypi-publish@release/v1

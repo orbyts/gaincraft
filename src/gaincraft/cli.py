@@ -1,0 +1,96 @@
+"""Gaincraft's bootstrap command-line interface."""
+
+from __future__ import annotations
+
+import json
+from importlib.metadata import PackageNotFoundError, version
+from typing import Annotated, Any
+
+import typer
+from rich.console import Console
+from rich.table import Table
+
+from gaincraft import __version__
+from gaincraft.doctor import HDR_NOTICE, collect_diagnostics
+
+app = typer.Typer(
+    name="gaincraft",
+    help="Prepare for validated HDR gain-map workflows. HDR processing begins in 0.0.2.",
+    no_args_is_help=True,
+)
+console = Console()
+
+
+def package_version() -> str:
+    """Return installed metadata when available, with a source-tree fallback."""
+    try:
+        return version("gaincraft")
+    except PackageNotFoundError:
+        return __version__
+
+
+def version_callback(value: bool) -> None:
+    """Print the package version for Typer's eager option callback."""
+    if value:
+        typer.echo(f"gaincraft {package_version()}")
+        raise typer.Exit
+
+
+@app.callback()
+def main(
+    show_version: Annotated[
+        bool,
+        typer.Option(
+            "--version", callback=version_callback, is_eager=True, help="Show the version."
+        ),
+    ] = False,
+) -> None:
+    """Gaincraft 0.0.1 is a bootstrap release; HDR processing begins in 0.0.2."""
+
+
+def _display_value(value: Any) -> str:
+    if value is None:
+        return "not available"
+    if isinstance(value, bool):
+        return "yes" if value else "no"
+    return str(value)
+
+
+@app.command()
+def doctor(
+    as_json: Annotated[
+        bool,
+        typer.Option("--json", help="Emit machine-readable diagnostics."),
+    ] = False,
+) -> None:
+    """Report bootstrap and future HDR runtime capabilities without modifying files."""
+    diagnostics = collect_diagnostics(package_version())
+    if as_json:
+        typer.echo(json.dumps(diagnostics, indent=2, sort_keys=True))
+        return
+
+    table = Table(title=f"Gaincraft {diagnostics['gaincraft']['version']} doctor")
+    table.add_column("Capability")
+    table.add_column("Status")
+    table.add_row("Bootstrap CLI", "ready")
+    table.add_row(
+        "Python",
+        f"{diagnostics['python']['implementation']} {diagnostics['python']['version']}",
+    )
+    table.add_row("pyvips", _display_value(diagnostics["pyvips"]["version"]))
+    table.add_row("pyvips importable", _display_value(diagnostics["pyvips"]["importable"]))
+    table.add_row("libvips", _display_value(diagnostics["libvips"]["version"]))
+    table.add_row("uhdrload", _display_value(diagnostics["ultrahdr"]["uhdrload"]))
+    table.add_row("uhdrsave", _display_value(diagnostics["ultrahdr"]["uhdrsave"]))
+    table.add_row(
+        "libultrahdr discoverable",
+        _display_value(diagnostics["ultrahdr"]["library_discoverable"]),
+    )
+    table.add_row("Cloudinary SDK", _display_value(diagnostics["cloudinary"]["sdk_version"]))
+    table.add_row(
+        "Cloudinary credentials configured",
+        _display_value(diagnostics["cloudinary"]["credentials_configured"]),
+    )
+    table.add_row("HDR processing", "not implemented")
+    console.print(table)
+    console.print(HDR_NOTICE)
