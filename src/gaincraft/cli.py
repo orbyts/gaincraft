@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 from typing import Annotated, Any
 
 import typer
@@ -11,6 +12,7 @@ from rich.console import Console
 from rich.table import Table
 
 from gaincraft import __version__
+from gaincraft.backends.apple.bridge import BackendError, run_backend
 from gaincraft.doctor import HDR_NOTICE, collect_diagnostics
 
 app = typer.Typer(
@@ -94,3 +96,54 @@ def doctor(
     table.add_row("HDR processing", "not implemented")
     console.print(table)
     console.print(HDR_NOTICE)
+
+
+def _native(*args: str) -> str:
+    try:
+        return run_backend(*args)
+    except BackendError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+
+
+@app.command()
+def inspect(source: Path) -> None:
+    """Inspect Apple HEIC HDR base and gain-map layout (macOS)."""
+    typer.echo(_native("inspect", str(source)))
+
+
+@app.command()
+def extract(source: Path, output: Annotated[Path, typer.Option("--output", "-o")]) -> None:
+    """Extract editable base.png, gainmap.png and manifest.json."""
+    typer.echo(_native("extract", str(source), str(output)))
+
+
+@app.command()
+def rebuild(
+    source: Annotated[Path, typer.Option("--source")],
+    output: Annotated[Path, typer.Option("--output", "-o")],
+    base: Annotated[Path | None, typer.Option("--base")] = None,
+    gainmap: Annotated[Path | None, typer.Option("--gainmap")] = None,
+) -> None:
+    """Rebuild Apple HDR HEIC, replacing either or both components."""
+    if base is None and gainmap is None:
+        typer.echo("Error: specify --base and/or --gainmap", err=True)
+        raise typer.Exit(2)
+    typer.echo(
+        _native(
+            "rebuild",
+            str(source),
+            str(base) if base else "-",
+            str(gainmap) if gainmap else "-",
+            str(output),
+        )
+    )
+
+
+@app.command()
+def validate(
+    source: Annotated[Path, typer.Option("--source")],
+    output: Annotated[Path, typer.Option("--output")],
+) -> None:
+    """Check core HDR structure against the source (not pixel equivalence)."""
+    typer.echo(_native("validate", str(source), str(output)))
