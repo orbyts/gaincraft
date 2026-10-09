@@ -88,4 +88,10 @@ Keep Trinity captures and GPS metadata outside the public Git repository. Add op
 - **2026-10-09:** Defer Trinity-specific SDR color correction and additional format support.
 - **2026-10-09:** M1 Python checks and native `inspect` verified on user's Mac; extraction/rebuild reported successful, but complete automated fidelity coverage remains outstanding.
 
-**Next action:** Implement M2.1 reconstruction specification and reference test vectors before writing TIFF encoders.
+**Next action:** Run the M2.1 native macOS HDR-aware reference-render investigation and capture numerical vectors. `docs/HDR_RECONSTRUCTION.md` and `gaincraft.hdr.pq` provide the initial spec and PQ tests; M2.1 is not yet complete.
+
+- **2026-10-09 (M2.1 patch):** Added reconstruction contract and standalone ST 2084 reference math/tests. Native Apple HDR rendering and TIFF export are still pending.
+
+- **M2 native probe (experimental):** Added `inspect-hdr` diagnostic; macOS compilation and HDR numerical results are **not yet verified**. Do not mark M2.1 complete until the native probe is validated.
+
+- **2026-10-09 (experimental PQ ICC):** 16-bit PQ TIFF now embeds a sampled matrix/TRC ICC derived from the source linear ICC. Numerical/ICC tag tests are included. Photoshop HDR equivalence remains unverified; M2.4 is not complete.

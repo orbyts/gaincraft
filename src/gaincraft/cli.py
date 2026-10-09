@@ -147,3 +147,56 @@ def validate(
 ) -> None:
     """Check core HDR structure against the source (not pixel equivalence)."""
     typer.echo(_native("validate", str(source), str(output)))
+
+
+@app.command("inspect-hdr")
+def inspect_hdr(
+    source: Path,
+    samples: Annotated[int, typer.Option("--samples", min=1, max=64)] = 16,
+) -> None:
+    """Probe Apple's HDR-aware decode into extended linear Display P3 (macOS)."""
+    from gaincraft.backends.apple.hdr_probe import run_hdr_probe
+
+    try:
+        typer.echo(run_hdr_probe(source, samples))
+    except BackendError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+
+
+# M2 experimental TIFF export. Do not claim color-managed Photoshop equivalence.
+export_app = typer.Typer(help="Experimental HDR raster export")
+app.add_typer(export_app, name="export")
+
+
+@export_app.command("tiff")
+def export_tiff(
+    source: Path,
+    output: Annotated[Path, typer.Option("--output", "-o")],
+    bit_depth: Annotated[int, typer.Option("--bit-depth")],
+    transfer: Annotated[str, typer.Option("--transfer")],
+    color_space: Annotated[str, typer.Option("--color-space")] = "source",
+    reference_white: Annotated[float | None, typer.Option("--reference-white")] = None,
+    experimental_untagged: Annotated[
+        bool, typer.Option("--experimental-untagged", help="Acknowledge missing PQ/linear ICC")
+    ] = False,
+) -> None:
+    """Export HDR TIFF with source primaries (PQ ICC remains experimental)."""
+    from gaincraft.hdr.export import export_apple_hdr_tiff
+    from gaincraft.hdr.tiff import HDRTIFFError
+
+    if color_space != "source":
+        raise typer.BadParameter("Only --color-space source is supported")
+    try:
+        report = export_apple_hdr_tiff(
+            source,
+            output,
+            bit_depth=bit_depth,
+            transfer=transfer,
+            reference_white_nits=reference_white,
+            embed_icc=not experimental_untagged,
+        )
+    except (BackendError, HDRTIFFError, OSError, ValueError) as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+    typer.echo(json.dumps(report, indent=2, sort_keys=True))
