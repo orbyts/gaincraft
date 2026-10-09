@@ -73,3 +73,9 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
+
+[dependency-groups]
+dev = [
+    "packaging>=26.3",
+    "twine>=6.2.0",
+]
