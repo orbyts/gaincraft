@@ -1,91 +1,199 @@
 # Luvix user guide
 
-Luvix inspects HDR gain-map captures, splits their components, rebuilds edited captures, and exports HDR TIFFs. Current tested input is Apple gain-map HEIC on macOS. Do not assume arbitrary HEIC/JPEG or arbitrary ICC color-space support.
+Luvix is a command-line utility for inspecting HDR gain-map photographs, extracting their components, rebuilding edited Apple HDR captures, and exporting HDR TIFFs for image editing.
 
-Use `uv run luvix` from the source checkout. For an installed CLI, use `luvix` directly. Check `uv run luvix --help` and `uv run luvix export tiff --help` for your exact version.
+> **Current support (v0.1.1):** Apple gain-map HEIC on macOS. Not every HEIC has a gain map. Apple JPEG gain maps, ISO 21496-1, Ultra HDR, and arbitrary color-space conversions are future work.
 
-## Inspect
+## Requirements
+
+- macOS for the currently implemented Apple HDR backend.
+- Python 3.11 or newer (for Python-based installation).
+- Apple Swift compiler (`swiftc`) and Xcode Command Line Tools for on-demand native backend compilation. Install the tools with `xcode-select --install` if needed.
+- A compatible external PQ ICC profile for the validated 16-bit P3 PQ workflow.
+
+## Install
+
+**Recommended: uv tool** (isolated application environment):
 
 ```bash
-uv run luvix doctor
-uv run luvix inspect ~/Pictures/IMG_8480.HEIC
-uv run luvix inspect-hdr ~/Pictures/IMG_8480.HEIC --samples 16
+uv tool install luvix
+luvix --version
+luvix --help
 ```
 
-## Split base and gain map
+**Alternative: pipx** (isolated application environment):
 
 ```bash
-uv run luvix extract ~/Pictures/IMG_8480.HEIC \
-  --output ~/Pictures/work/IMG_8480
+pipx install luvix
+luvix --version
 ```
 
-Outputs: `base.png`, `gainmap.png`, `manifest.json`. Keep the original HEIC: rebuild uses its metadata. The exported PNGs may be in *raw pixel orientation*, not display orientation.
-
-## Rebuild from edited components
+**Alternative: pip** (install in an activated virtual environment):
 
 ```bash
-uv run luvix rebuild \
-  --source ~/Pictures/IMG_8480.HEIC \
-  --base ~/Pictures/work/IMG_8480/base.png \
-  --output ~/Pictures/work/base_edited.HEIC
-
-uv run luvix rebuild \
-  --source ~/Pictures/IMG_8480.HEIC \
-  --gainmap ~/Pictures/work/IMG_8480/gainmap.png \
-  --output ~/Pictures/work/map_edited.HEIC
-
-uv run luvix rebuild \
-  --source ~/Pictures/IMG_8480.HEIC \
-  --base ~/Pictures/work/IMG_8480/base.png \
-  --gainmap ~/Pictures/work/IMG_8480/gainmap.png \
-  --output ~/Pictures/work/rebuilt.HEIC
-
-uv run luvix validate \
-  --source ~/Pictures/IMG_8480.HEIC \
-  --output ~/Pictures/work/rebuilt.HEIC
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install luvix
+luvix --version
 ```
 
-`validate` currently checks core structure, not perceptual or pixel identity. Photoshop may rotate orientation-6 captures to upright dimensions (4284x5712) while the raw raster is 5712x4284. Do not resize to correct this. Raw/display orientation-aware rebuild is planned.
+Avoid installing with `pip` into the system Python. The installed command is `luvix`, **not** `uv run luvix`. The latter is for development from a source checkout.
 
-## 32-bit float linear HDR TIFF
+To upgrade a uv-managed installation:
 
 ```bash
-uv run luvix export tiff ~/Pictures/IMG_8480.HEIC \
+uv tool upgrade luvix
+```
+
+To remove it:
+
+```bash
+uv tool uninstall luvix
+```
+
+## Quick start
+
+Use your own input file and a writable output directory:
+
+```bash
+mkdir -p ~/Pictures/luvix-work
+luvix inspect ~/Pictures/photo.HEIC
+luvix extract ~/Pictures/photo.HEIC --output ~/Pictures/luvix-work/photo
+luvix export tiff ~/Pictures/photo.HEIC \
   --bit-depth 32 --transfer linear --color-space source \
-  --output ~/Pictures/work/linear32.tif
+  --output ~/Pictures/luvix-work/photo-linear32.tif
 ```
 
-The tested Display P3 path embeds a matching *linear Display P3* ICC profile, preserves source orientation tag, and retains HDR RGB values above 1.0. This was visually validated in Photoshop. `source` does not imply every ICC profile is supported: currently tested source working spaces are Display P3 and sRGB.
+Luvix does not modify the original capture. Keep it available for rebuilding edited components.
 
-## 16-bit unsigned PQ HDR TIFF
-
-The visually validated P3 workflow currently requires an **external compatible P3 PQ ICC**. Do not commit a proprietary ICC to a public repository without rights.
+## Inspect a capture
 
 ```bash
-uv run luvix export tiff ~/Pictures/IMG_8480.HEIC \
-  --bit-depth 16 --transfer pq --color-space source \
+luvix inspect ~/Pictures/photo.HEIC
+luvix inspect-hdr ~/Pictures/photo.HEIC --samples 16
+```
+
+`inspect` reports stored image dimensions, orientation, working color space, and gain-map layout. `inspect-hdr` is a diagnostic comparison of Apple's SDR and HDR decoding paths. For command-specific options:
+
+```bash
+luvix inspect --help
+luvix inspect-hdr --help
+```
+
+## Extract SDR base and HDR gain map
+
+```bash
+luvix extract ~/Pictures/photo.HEIC \
+  --output ~/Pictures/luvix-work/photo
+```
+
+The extraction creates `base.png`, `gainmap.png`, and `manifest.json`. The PNGs can be in **raw pixel orientation**, which may differ from how Photos or Photoshop displays the capture. Keep the source HEIC and manifest. A gain-map preview PNG is not a substitute for the original gain-map metadata.
+
+## Rebuild an edited capture
+
+Replace only the base image:
+
+```bash
+luvix rebuild \
+  --source ~/Pictures/photo.HEIC \
+  --base ~/Pictures/luvix-work/photo/base.png \
+  --output ~/Pictures/luvix-work/base-edited.HEIC
+```
+
+Replace only the gain map:
+
+```bash
+luvix rebuild \
+  --source ~/Pictures/photo.HEIC \
+  --gainmap ~/Pictures/luvix-work/photo/gainmap.png \
+  --output ~/Pictures/luvix-work/map-edited.HEIC
+```
+
+Replace both:
+
+```bash
+luvix rebuild \
+  --source ~/Pictures/photo.HEIC \
+  --base ~/Pictures/luvix-work/photo/base.png \
+  --gainmap ~/Pictures/luvix-work/photo/gainmap.png \
+  --output ~/Pictures/luvix-work/rebuilt.HEIC
+```
+
+Validate the rebuilt HEIC:
+
+```bash
+luvix validate \
+  --source ~/Pictures/photo.HEIC \
+  --output ~/Pictures/luvix-work/rebuilt.HEIC
+```
+
+**Validation scope:** structural HDR checks, not pixel-perfect identity or visual equivalence. HEIC re-encoding can be lossy. If an editor changes a 5712×4284 raw raster into a 4284×5712 upright raster, the current rebuild may reject it. Do not resample merely to satisfy dimensions. Orientation-aware rebuild remains on the roadmap.
+
+## Export a 32-bit linear HDR TIFF
+
+For a high-precision Photoshop editing master:
+
+```bash
+luvix export tiff ~/Pictures/photo.HEIC \
+  --bit-depth 32 \
+  --transfer linear \
+  --color-space source \
+  --output ~/Pictures/luvix-work/photo-linear32.tif
+```
+
+The validated Display P3 path embeds a matching **linear Display P3** ICC profile, preserves the source orientation tag, and retains floating-point HDR values above 1.0. Source-matched behavior is currently tested for Display P3 and sRGB, not arbitrary ICC profiles. Photoshop rendering can depend on HDR display settings.
+
+## Export a 16-bit PQ HDR TIFF
+
+The validated P3 workflow requires a **compatible external P3-D65 PQ ICC profile**. Luvix does not currently bundle one. Supply a profile you are licensed to use:
+
+```bash
+luvix export tiff ~/Pictures/photo.HEIC \
+  --bit-depth 16 \
+  --transfer pq \
+  --color-space source \
   --reference-white 203 \
   --icc-profile ~/ColorProfiles/P3_PQ_Reference.icc \
-  --output ~/Pictures/work/pq16.tif
+  --output ~/Pictures/luvix-work/photo-pq16.tif
 ```
 
-203 nits is a configurable test convention, not derived from the HEIC. The P3 PQ profile must match source primaries and ST 2084. The old experimental *generated* PQ ICC produced a dark Photoshop image and is not the recommended route. In one real-image test, inverse-PQ vs linear32 had mean absolute error 1.64e-5 and maximum 2.81e-4.
+`203` nits is an explicit reference-white convention used in testing, **not** a value inferred from the HEIC. The ICC must describe the same primaries and PQ/ST 2084 encoding as the output. The previously generated experimental linear-named ICC was not Photoshop-compatible. A compatible Adobe-generated P3 PQ ICC was visually validated in one workflow; redistribution rights have not been established.
 
-## Verify output
+## Verify the output
+
+With ExifTool installed separately:
 
 ```bash
-exiftool -G1 -s -ProfileDescription -BitsPerSample \
-  -SampleFormat -Orientation ~/Pictures/work/linear32.tif
+exiftool -G1 -s \
+  -ProfileDescription -BitsPerSample -SampleFormat -Orientation \
+  ~/Pictures/luvix-work/photo-linear32.tif
 ```
 
-ICC should be present in TIFF tag 34675; orientation in tag 274. Confirm actual tags, not just a success message. Input files are not modified, but HEIC re-encoding may be lossy.
+For the validated 32-bit P3 export, expect three 32-bit floating-point channels, a linear P3 profile, and the original orientation (for example, orientation 6). TIFF ICC profile data is stored in tag 34675 and orientation in tag 274. The metadata check is not a substitute for visual verification.
 
 ## Troubleshooting
 
-- `No such command`: verify the CLI version and `--help`.
-- `Base dimensions mismatch`: check raw vs display orientation; do not resample.
-- Dark PQ TIFF or `Display P3 Linear` profile: PQ pixels need a matching PQ ICC, not a linear ICC.
-- Unsupported source profile: no general automatic color conversion is promised yet.
-- Native macOS backend fails: verify `swiftc` and Xcode command-line tools.
+| Symptom | What to check |
+|---|---|
+| `luvix: command not found` | Confirm installation and that your uv/pipx executable directory is on `PATH`. |
+| `No such command` | Run `luvix --version` and `luvix --help`. |
+| `Base dimensions mismatch` | Compare raw and display orientations; do not resize the image. |
+| PQ TIFF looks dark | Verify that the embedded profile is PQ, not linear, and that its primaries match. |
+| Unsupported color profile | The source working-space implementation is currently limited. |
+| Swift compilation fails | Check `swiftc --version` and Xcode Command Line Tools. |
+| Output file already exists | Choose a new output filename; Luvix refuses to overwrite existing outputs. |
 
-Apple JPEG gain maps, ISO 21496-1, Ultra HDR JPEG, multichannel gain maps, arbitrary ICC conversions, and Trinity-specific color corrections are **not yet implemented** as general workflows.
+## Developer workflow
+
+Only when working on the source repository:
+
+```bash
+git clone https://github.com/orbyts/luvix.git
+cd luvix
+uv sync --extra dev
+uv run luvix --help
+uv run pytest -q
+uv run ruff check .
+```
+
+For feature requests, current support boundaries, and planned interoperability with Apple JPEG gain maps, ISO 21496-1, libultrahdr, libvips, and ImageMagick, see `ROADMAP.md`.
