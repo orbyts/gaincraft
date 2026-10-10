@@ -22,9 +22,14 @@ def export_apple_hdr_tiff(
     reference_white_nits: float | None = None,
     negative_tolerance: float = 0.005,
     embed_icc: bool = False,
+    external_pq_icc: Path | None = None,
 ) -> dict[str, object]:
     if (bit_depth, transfer) not in {(16, "pq"), (32, "linear")}:
         raise HDRTIFFError("Only 16/pq or 32/linear supported")
+    if external_pq_icc is not None and (bit_depth, transfer) != (16, "pq"):
+        raise HDRTIFFError("--icc-profile is supported only for 16-bit PQ")
+    if external_pq_icc is not None and not embed_icc:
+        raise HDRTIFFError("--icc-profile requires ICC embedding")
     if output.exists():
         raise FileExistsError(f"Refusing to overwrite {output}")
     if not source.is_file():
@@ -54,7 +59,11 @@ def export_apple_hdr_tiff(
             # Small negative excursions from color transforms cannot be represented by PQ.
             # Report explicitly; do not modify the source image.
             np.maximum(rgb, 0, out=rgb)
-        if embed_icc:
+        if external_pq_icc is not None:
+            from gaincraft.hdr.pq_profile import load_external_pq_icc
+
+            icc_profile = load_external_pq_icc(external_pq_icc, info["source_primaries"])
+        elif embed_icc:
             from gaincraft.backends.apple.icc_profile import source_linear_icc
 
             icc_profile = source_linear_icc(info["color_space"])

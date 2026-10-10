@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.1.0] - 2026-10-10
+
+### Added
+- Apple HDR HEIC inspection and gain-map metadata reporting.
+- Independent SDR base and HDR gain-map extraction.
+- HDR HEIC reconstruction after editing either component.
+- Structural HDR validation.
+- Native Apple HDR decoding into extended linear RGB.
+- 32-bit floating-point linear HDR TIFF export.
+- 16-bit PQ HDR TIFF export with external ICC profile support.
+- Source-aware color management for tested Display P3 and sRGB workflows.
+- Original image orientation preservation.
+- User guide, architecture documentation, and development roadmap.
+
+### Notes
+- Apple HDR HEIC is the currently validated input format.
+- 32-bit linear TIFF export has been validated in Photoshop.
+- 16-bit PQ TIFF export has been validated using an externally supplied
+  Adobe-compatible P3 PQ ICC profile.
+- Additional input formats, color spaces, and gain-map standards remain
+  on the roadmap.
+
+
+
 All notable changes to Gaincraft will be documented in this file. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project follows
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

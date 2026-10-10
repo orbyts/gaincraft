@@ -17,7 +17,7 @@ from gaincraft.doctor import HDR_NOTICE, collect_diagnostics
 
 app = typer.Typer(
     name="gaincraft",
-    help="Prepare for validated HDR gain-map workflows. HDR processing begins in 0.0.2.",
+    help="Inspect, extract, rebuild, validate, and convert HDR gain-map images.",
     no_args_is_help=True,
 )
 console = Console()
@@ -165,7 +165,7 @@ def inspect_hdr(
 
 
 # M2 experimental TIFF export. Do not claim color-managed Photoshop equivalence.
-export_app = typer.Typer(help="Experimental HDR raster export")
+export_app = typer.Typer(help="Export reconstructed HDR images to high-precision raster formats")
 app.add_typer(export_app, name="export")
 
 
@@ -177,6 +177,7 @@ def export_tiff(
     transfer: Annotated[str, typer.Option("--transfer")],
     color_space: Annotated[str, typer.Option("--color-space")] = "source",
     reference_white: Annotated[float | None, typer.Option("--reference-white")] = None,
+    icc_profile: Annotated[Path | None, typer.Option("--icc-profile")] = None,
     experimental_untagged: Annotated[
         bool, typer.Option("--experimental-untagged", help="Acknowledge missing PQ/linear ICC")
     ] = False,
@@ -185,6 +186,10 @@ def export_tiff(
     from gaincraft.hdr.export import export_apple_hdr_tiff
     from gaincraft.hdr.tiff import HDRTIFFError
 
+    if icc_profile is not None and (bit_depth, transfer) != (16, "pq"):
+        raise typer.BadParameter("--icc-profile requires --bit-depth 16 --transfer pq")
+    if icc_profile is not None and experimental_untagged:
+        raise typer.BadParameter("--icc-profile conflicts with --experimental-untagged")
     if color_space != "source":
         raise typer.BadParameter("Only --color-space source is supported")
     try:
@@ -195,6 +200,7 @@ def export_tiff(
             transfer=transfer,
             reference_white_nits=reference_white,
             embed_icc=not experimental_untagged,
+            external_pq_icc=icc_profile,
         )
     except (BackendError, HDRTIFFError, OSError, ValueError) as exc:
         typer.echo(f"Error: {exc}", err=True)

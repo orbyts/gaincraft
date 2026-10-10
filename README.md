@@ -1,72 +1,62 @@
 # Gaincraft
 
 [![Tests](https://github.com/orbyts/gaincraft/actions/workflows/test.yml/badge.svg)](https://github.com/orbyts/gaincraft/actions/workflows/test.yml)
-[![PyPI](https://img.shields.io/pypi/v/gaincraft.svg)](https://pypi.org/project/gaincraft/)
-[![Python](https://img.shields.io/pypi/pyversions/gaincraft.svg)](https://pypi.org/project/gaincraft/)
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 
-Gaincraft is a public Python CLI project for producing and publishing validated HDR gain-map
-image derivatives.
+**Gaincraft** is a CLI toolkit for HDR gain-map images: inspect, split SDR base and gain map, rebuild edited captures, validate, and export flattened HDR TIFFs.
 
-> **Release status:** Gaincraft 0.0.1 is a legitimate bootstrap release that establishes the
-> package and diagnostic CLI. **HDR processing begins in 0.0.2.** This release does not inspect,
-> resize, crop, validate, or upload images.
+## Current release-candidate scope
 
-## Install
+The tested backend processes Apple HDR gain-map **HEIC** captures on **macOS** using ImageIO/Core Image and Swift. It supports `inspect`, `extract`, `rebuild`, `validate`, `inspect-hdr`, and `export tiff`. A 32-bit linear float TIFF with matching source-supported ICC has been validated in Photoshop. The 16-bit PQ TIFF was visually validated with an **externally supplied P3 PQ ICC**. General JPEG gain-map input, ISO/Ultra HDR interoperability, and arbitrary ICC source profiles are roadmap items, **not current supported features**.
 
-Gaincraft requires Python 3.11 or newer. Once 0.0.1 has been published to PyPI:
+## Quick start (source checkout)
 
-```console
-pipx install gaincraft
+```bash
+uv sync --extra dev
+uv run gaincraft doctor
+uv run gaincraft inspect ~/Pictures/photo.HEIC
+uv run gaincraft extract ~/Pictures/photo.HEIC --output ~/Pictures/work/photo
+uv run gaincraft rebuild --source ~/Pictures/photo.HEIC \
+  --base ~/Pictures/work/photo/base.png \
+  --output ~/Pictures/work/photo_rebuilt.HEIC
+uv run gaincraft validate --source ~/Pictures/photo.HEIC \
+  --output ~/Pictures/work/photo_rebuilt.HEIC
+uv run gaincraft export tiff ~/Pictures/photo.HEIC \
+  --bit-depth 32 --transfer linear --color-space source \
+  --output ~/Pictures/work/photo_linear32.tif
 ```
 
-For local development with `uv`, keep the project environment outside the repository:
+For 16-bit PQ output, use a compatible external PQ ICC and explicit reference white:
 
-```console
-UV_PROJECT_ENVIRONMENT="$HOME/.venvs/gaincraft" uv sync --extra dev
+```bash
+uv run gaincraft export tiff ~/Pictures/photo.HEIC \
+  --bit-depth 16 --transfer pq --color-space source \
+  --reference-white 203 --icc-profile ~/ColorProfiles/P3_PQ_Reference.icc \
+  --output ~/Pictures/work/photo_pq16.tif
 ```
 
-## Bootstrap commands
+Do not assume the example profile is bundled. Confirm your exact CLI options with `uv run gaincraft export tiff --help`. Input captures are never modified, but HEIC rebuild may re-encode pixels.
 
-```console
-$ gaincraft --version
-gaincraft 0.0.1
+## Documentation
 
-$ gaincraft doctor
-```
+- [User guide](docs/USER_GUIDE.md): full command walkthrough, output formats, and troubleshooting.
+- [Architecture](docs/ARCHITECTURE.md): gain-map model, color handling, and format constraints.
+- [Roadmap](ROADMAP.md): planned JPEG, ISO 21496-1, Ultra HDR, multichannel maps, and color-space expansion.
+- [Release checklist](docs/RELEASE_CHECKLIST.md): CI, package verification, merge, publish, and install smoke tests.
+- [Changelog](CHANGELOG.md)
 
-`gaincraft doctor` is read-only. It reports the Gaincraft and Python versions, optional pyvips and
-libvips availability, the future `uhdrload`/`uhdrsave` capabilities, optional Cloudinary SDK
-availability, and whether Cloudinary credentials are configured. It never prints credential
-values. Use `gaincraft doctor --json` for machine-readable output.
+## Development checks
 
-In 0.0.1, a successful `doctor` exit means the bootstrap CLI ran successfully; it does not certify
-HDR readiness. HDR capability enforcement arrives with the processing commands in 0.0.2.
-
-## Development
-
-Run the same checks used by CI:
-
-```console
-UV_PROJECT_ENVIRONMENT="$HOME/.venvs/gaincraft" uv run ruff check .
-UV_PROJECT_ENVIRONMENT="$HOME/.venvs/gaincraft" uv run ruff format --check .
-UV_PROJECT_ENVIRONMENT="$HOME/.venvs/gaincraft" uv run pytest
+```bash
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest -q
+uv lock --check
 uv build
-UV_PROJECT_ENVIRONMENT="$HOME/.venvs/gaincraft" uv run twine check dist/*
+uv run --locked twine check dist/*
 ```
 
-The repository's test workflow covers supported Python versions on Linux and macOS. Publishing is
-separate: a published GitHub release triggers the trusted PyPI workflow, which uses GitHub OIDC and
-the protected `pypi` environment rather than a long-lived API token.
-
-## Roadmap
-
-Version 0.0.2 is the first functional release. Its planned scope includes runtime capability
-enforcement and gain-map-aware inspect, resize, rendition, validation, and immutable Cloudinary
-upload workflows. No simulated or SDR-substitution processing exists in 0.0.1.
-
-See [CHANGELOG.md](CHANGELOG.md) for release notes.
+The native Apple backend requires macOS and `swiftc`. The Python package itself is cross-platform, but this does not imply the Apple HDR features run on Linux.
 
 ## License
 
-Licensed under the [Apache License 2.0](LICENSE).
+Apache License 2.0. Do not redistribute proprietary reference ICC profiles or private photographs as part of Gaincraft.

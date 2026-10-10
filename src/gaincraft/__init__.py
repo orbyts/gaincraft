@@ -1,5 +1,8 @@
-"""Gaincraft's public package metadata."""
+"""Gaincraft HDR image processing toolkit."""
 
-__all__ = ["__version__"]
+from importlib.metadata import PackageNotFoundError, version
 
-__version__ = "0.0.1"
+try:
+    __version__ = version("gaincraft")
+except PackageNotFoundError:
+    __version__ = "0+unknown"
