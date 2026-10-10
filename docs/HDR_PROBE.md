@@ -1,6 +1,6 @@
 # Native HDR decode probe (experimental)
 
-`gaincraft inspect-hdr SOURCE --samples 16` asks ImageIO to decode the same
+`luvix inspect-hdr SOURCE --samples 16` asks ImageIO to decode the same
 Apple gain-map HEIC with `kCGImageSourceDecodeToHDR` disabled and enabled.
 Each result is rendered into an **extended linear Display P3** float32 bitmap,
 then a deterministic grid is sampled and summarized.
@@ -16,7 +16,7 @@ has no HDR content.
 ## Local test
 
 ```sh
-uv run gaincraft inspect-hdr ~/Desktop/Trinity/IMG_8480.HEIC --samples 16
+uv run luvix inspect-hdr ~/Desktop/Trinity/IMG_8480.HEIC --samples 16
 ```
 
 Save the JSON output outside Git and compare the `sdr` and `hdr` sections.

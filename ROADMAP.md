@@ -1,4 +1,4 @@
-# Gaincraft roadmap
+# Luvix roadmap
 
 Updated 2026-10-10. This is the project execution plan. Mark tasks complete only with verified evidence.
 

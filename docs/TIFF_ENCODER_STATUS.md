@@ -1,7 +1,7 @@
 # M2 TIFF raster encoder (experimental)
 
-This patch adds `gaincraft.hdr.tiff.write_hdr_tiff` and synthetic tests only.
-It **does not** add `gaincraft export tiff` or Apple gain-map reconstruction.
+This patch adds `luvix.hdr.tiff.write_hdr_tiff` and synthetic tests only.
+It **does not** add `luvix export tiff` or Apple gain-map reconstruction.
 
 - `32/linear`: float32 RGB TIFF, preserves negative and above-one channel values.
 - `16/pq`: uint16 RGB TIFF encoded using SMPTE ST 2084 with explicit `reference_white_nits` (e.g. 203). Values outside the PQ domain fail instead of clipping.
@@ -15,7 +15,7 @@ Copy the patch files into the repository. Add the runtime dependencies with:
 
 ```sh
 uv add numpy tifffile
-uv run ruff format src/gaincraft/hdr/tiff.py tests/test_hdr_tiff.py
+uv run ruff format src/luvix/hdr/tiff.py tests/test_hdr_tiff.py
 uv run ruff check .
 uv run pytest -q
 ```

@@ -110,7 +110,7 @@ def write_hdr_tiff(
     destination.parent.mkdir(parents=True, exist_ok=True)
     description = json.dumps(
         {
-            "gaincraft": "experimental-hdr-tiff-v1",
+            "luvix": "experimental-hdr-tiff-v1",
             "primaries": primaries,
             "transfer": transfer,
             "reference_white_nits": reference_white_nits,

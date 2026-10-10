@@ -4,14 +4,14 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from gaincraft.cli import app
+from luvix.cli import app
 
 runner = CliRunner()
 
 
 def test_pq_dispatch_without_untagged_flag(monkeypatch):
     monkeypatch.setattr(
-        "gaincraft.hdr.export.export_apple_hdr_tiff",
+        "luvix.hdr.export.export_apple_hdr_tiff",
         lambda *args, **kwargs: {"icc_embedded": True},
     )
     result = runner.invoke(
@@ -40,7 +40,7 @@ def test_dispatch_32(monkeypatch, tmp_path):
         calls.append((source, output, kwargs))
         return {"output": str(output), "icc_embedded": False}
 
-    monkeypatch.setattr("gaincraft.hdr.export.export_apple_hdr_tiff", fake)
+    monkeypatch.setattr("luvix.hdr.export.export_apple_hdr_tiff", fake)
     result = runner.invoke(
         app,
         [

@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import tifffile
 
-from gaincraft.hdr.tiff import HDRTIFFError, write_hdr_tiff
+from luvix.hdr.tiff import HDRTIFFError, write_hdr_tiff
 
 
 def fake_icc() -> bytes:

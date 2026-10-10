@@ -10,7 +10,7 @@ import struct
 
 import numpy as np
 
-from gaincraft.hdr.tiff import HDRTIFFError
+from luvix.hdr.tiff import HDRTIFFError
 
 
 def _u32(data: bytes, offset: int) -> int:

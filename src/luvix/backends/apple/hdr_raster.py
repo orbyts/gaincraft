@@ -8,15 +8,15 @@ import subprocess
 from importlib.resources import files
 from pathlib import Path
 
-from gaincraft.backends.apple.bridge import BackendError
+from luvix.backends.apple.bridge import BackendError
 
 
 def render_hdr_raster(source: Path, prefix: Path) -> None:
     if platform.system() != "Darwin":
         raise BackendError("Apple HDR raster export requires macOS")
-    swift = Path(str(files("gaincraft.backends.apple").joinpath("hdr_raster.swift")))
+    swift = Path(str(files("luvix.backends.apple").joinpath("hdr_raster.swift")))
     digest = hashlib.sha256(swift.read_bytes()).hexdigest()[:16]
-    binary = Path.home() / ".cache" / "gaincraft" / f"hdr-raster-{digest}"
+    binary = Path.home() / ".cache" / "luvix" / f"hdr-raster-{digest}"
     if not binary.exists():
         binary.parent.mkdir(parents=True, exist_ok=True)
         compiled = subprocess.run(

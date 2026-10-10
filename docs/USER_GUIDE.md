@@ -1,21 +1,21 @@
-# Gaincraft user guide
+# Luvix user guide
 
-Gaincraft inspects HDR gain-map captures, splits their components, rebuilds edited captures, and exports HDR TIFFs. Current tested input is Apple gain-map HEIC on macOS. Do not assume arbitrary HEIC/JPEG or arbitrary ICC color-space support.
+Luvix inspects HDR gain-map captures, splits their components, rebuilds edited captures, and exports HDR TIFFs. Current tested input is Apple gain-map HEIC on macOS. Do not assume arbitrary HEIC/JPEG or arbitrary ICC color-space support.
 
-Use `uv run gaincraft` from the source checkout. For an installed CLI, use `gaincraft` directly. Check `uv run gaincraft --help` and `uv run gaincraft export tiff --help` for your exact version.
+Use `uv run luvix` from the source checkout. For an installed CLI, use `luvix` directly. Check `uv run luvix --help` and `uv run luvix export tiff --help` for your exact version.
 
 ## Inspect
 
 ```bash
-uv run gaincraft doctor
-uv run gaincraft inspect ~/Pictures/IMG_8480.HEIC
-uv run gaincraft inspect-hdr ~/Pictures/IMG_8480.HEIC --samples 16
+uv run luvix doctor
+uv run luvix inspect ~/Pictures/IMG_8480.HEIC
+uv run luvix inspect-hdr ~/Pictures/IMG_8480.HEIC --samples 16
 ```
 
 ## Split base and gain map
 
 ```bash
-uv run gaincraft extract ~/Pictures/IMG_8480.HEIC \
+uv run luvix extract ~/Pictures/IMG_8480.HEIC \
   --output ~/Pictures/work/IMG_8480
 ```
 
@@ -24,23 +24,23 @@ Outputs: `base.png`, `gainmap.png`, `manifest.json`. Keep the original HEIC: reb
 ## Rebuild from edited components
 
 ```bash
-uv run gaincraft rebuild \
+uv run luvix rebuild \
   --source ~/Pictures/IMG_8480.HEIC \
   --base ~/Pictures/work/IMG_8480/base.png \
   --output ~/Pictures/work/base_edited.HEIC
 
-uv run gaincraft rebuild \
+uv run luvix rebuild \
   --source ~/Pictures/IMG_8480.HEIC \
   --gainmap ~/Pictures/work/IMG_8480/gainmap.png \
   --output ~/Pictures/work/map_edited.HEIC
 
-uv run gaincraft rebuild \
+uv run luvix rebuild \
   --source ~/Pictures/IMG_8480.HEIC \
   --base ~/Pictures/work/IMG_8480/base.png \
   --gainmap ~/Pictures/work/IMG_8480/gainmap.png \
   --output ~/Pictures/work/rebuilt.HEIC
 
-uv run gaincraft validate \
+uv run luvix validate \
   --source ~/Pictures/IMG_8480.HEIC \
   --output ~/Pictures/work/rebuilt.HEIC
 ```
@@ -50,7 +50,7 @@ uv run gaincraft validate \
 ## 32-bit float linear HDR TIFF
 
 ```bash
-uv run gaincraft export tiff ~/Pictures/IMG_8480.HEIC \
+uv run luvix export tiff ~/Pictures/IMG_8480.HEIC \
   --bit-depth 32 --transfer linear --color-space source \
   --output ~/Pictures/work/linear32.tif
 ```
@@ -62,7 +62,7 @@ The tested Display P3 path embeds a matching *linear Display P3* ICC profile, pr
 The visually validated P3 workflow currently requires an **external compatible P3 PQ ICC**. Do not commit a proprietary ICC to a public repository without rights.
 
 ```bash
-uv run gaincraft export tiff ~/Pictures/IMG_8480.HEIC \
+uv run luvix export tiff ~/Pictures/IMG_8480.HEIC \
   --bit-depth 16 --transfer pq --color-space source \
   --reference-white 203 \
   --icc-profile ~/ColorProfiles/P3_PQ_Reference.icc \

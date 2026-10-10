@@ -16,9 +16,9 @@ class BackendError(RuntimeError):
 def backend_binary() -> Path:
     if platform.system() != "Darwin":
         raise BackendError("Apple HDR backend requires macOS; no portable backend yet")
-    source = Path(str(files("gaincraft.backends.apple").joinpath("imageio.swift")))
+    source = Path(str(files("luvix.backends.apple").joinpath("imageio.swift")))
     digest = hashlib.sha256(source.read_bytes()).hexdigest()[:16]
-    target = Path.home() / ".cache" / "gaincraft" / f"imageio-{digest}"
+    target = Path.home() / ".cache" / "luvix" / f"imageio-{digest}"
     if not target.exists():
         target.parent.mkdir(parents=True, exist_ok=True)
         result = subprocess.run(

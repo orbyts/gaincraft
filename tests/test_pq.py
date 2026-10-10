@@ -4,7 +4,7 @@ import math
 
 import pytest
 
-from gaincraft.hdr.pq import pq_decode, pq_encode
+from luvix.hdr.pq import pq_decode, pq_encode
 
 
 @pytest.mark.parametrize("nits", [0.0, 0.001, 0.1, 1.0, 100.0, 203.0, 1000.0, 4000.0, 10000.0])

@@ -44,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/gaincraft
+      url: https://pypi.org/p/luvix
     permissions:
       id-token: write
 

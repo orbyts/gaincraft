@@ -1,8 +1,8 @@
-# Gaincraft
+# Luvix
 
-[![Tests](https://github.com/orbyts/gaincraft/actions/workflows/test.yml/badge.svg)](https://github.com/orbyts/gaincraft/actions/workflows/test.yml)
+[![Tests](https://github.com/orbyts/luvix/actions/workflows/test.yml/badge.svg)](https://github.com/orbyts/luvix/actions/workflows/test.yml)
 
-**Gaincraft** is a CLI toolkit for HDR gain-map images: inspect, split SDR base and gain map, rebuild edited captures, validate, and export flattened HDR TIFFs.
+**Luvix** is a CLI toolkit for HDR gain-map images: inspect, split SDR base and gain map, rebuild edited captures, validate, and export flattened HDR TIFFs.
 
 ## Current release-candidate scope
 
@@ -12,15 +12,15 @@ The tested backend processes Apple HDR gain-map **HEIC** captures on **macOS** u
 
 ```bash
 uv sync --extra dev
-uv run gaincraft doctor
-uv run gaincraft inspect ~/Pictures/photo.HEIC
-uv run gaincraft extract ~/Pictures/photo.HEIC --output ~/Pictures/work/photo
-uv run gaincraft rebuild --source ~/Pictures/photo.HEIC \
+uv run luvix doctor
+uv run luvix inspect ~/Pictures/photo.HEIC
+uv run luvix extract ~/Pictures/photo.HEIC --output ~/Pictures/work/photo
+uv run luvix rebuild --source ~/Pictures/photo.HEIC \
   --base ~/Pictures/work/photo/base.png \
   --output ~/Pictures/work/photo_rebuilt.HEIC
-uv run gaincraft validate --source ~/Pictures/photo.HEIC \
+uv run luvix validate --source ~/Pictures/photo.HEIC \
   --output ~/Pictures/work/photo_rebuilt.HEIC
-uv run gaincraft export tiff ~/Pictures/photo.HEIC \
+uv run luvix export tiff ~/Pictures/photo.HEIC \
   --bit-depth 32 --transfer linear --color-space source \
   --output ~/Pictures/work/photo_linear32.tif
 ```
@@ -28,13 +28,13 @@ uv run gaincraft export tiff ~/Pictures/photo.HEIC \
 For 16-bit PQ output, use a compatible external PQ ICC and explicit reference white:
 
 ```bash
-uv run gaincraft export tiff ~/Pictures/photo.HEIC \
+uv run luvix export tiff ~/Pictures/photo.HEIC \
   --bit-depth 16 --transfer pq --color-space source \
   --reference-white 203 --icc-profile ~/ColorProfiles/P3_PQ_Reference.icc \
   --output ~/Pictures/work/photo_pq16.tif
 ```
 
-Do not assume the example profile is bundled. Confirm your exact CLI options with `uv run gaincraft export tiff --help`. Input captures are never modified, but HEIC rebuild may re-encode pixels.
+Do not assume the example profile is bundled. Confirm your exact CLI options with `uv run luvix export tiff --help`. Input captures are never modified, but HEIC rebuild may re-encode pixels.
 
 ## Documentation
 
@@ -59,4 +59,4 @@ The native Apple backend requires macOS and `swiftc`. The Python package itself 
 
 ## License
 
-Apache License 2.0. Do not redistribute proprietary reference ICC profiles or private photographs as part of Gaincraft.
+Apache License 2.0. Do not redistribute proprietary reference ICC profiles or private photographs as part of Luvix.

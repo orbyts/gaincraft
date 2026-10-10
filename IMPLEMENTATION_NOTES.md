@@ -1,16 +1,16 @@
 # Apple HDR CLI integration (experimental)
 
 Core commands: `inspect`, `extract`, `rebuild`, `validate`. The Apple backend compiles
-ImageIO Swift on macOS on first invocation, cached under `~/.cache/gaincraft`.
+ImageIO Swift on macOS on first invocation, cached under `~/.cache/luvix`.
 
 Examples:
 
 ```sh
-uv run gaincraft inspect IMG_8480.HEIC
-uv run gaincraft extract IMG_8480.HEIC --output work/8480
-uv run gaincraft rebuild --source IMG_8480.HEIC --base work/8480/base.png --output work/8480/rebuilt.HEIC
-uv run gaincraft rebuild --source IMG_8480.HEIC --gainmap work/8480/gainmap.png --output work/8480/map-edit.HEIC
-uv run gaincraft validate --source IMG_8480.HEIC --output work/8480/rebuilt.HEIC
+uv run luvix inspect IMG_8480.HEIC
+uv run luvix extract IMG_8480.HEIC --output work/8480
+uv run luvix rebuild --source IMG_8480.HEIC --base work/8480/base.png --output work/8480/rebuilt.HEIC
+uv run luvix rebuild --source IMG_8480.HEIC --gainmap work/8480/gainmap.png --output work/8480/map-edit.HEIC
+uv run luvix validate --source IMG_8480.HEIC --output work/8480/rebuilt.HEIC
 ```
 
 Scope: Apple HEIC + L008 gain maps only. JPEG/Ultra HDR not implemented.
@@ -21,7 +21,7 @@ Trinity color correction in core. Rebuild refuses overwrite. Preserve originals.
 ## macOS integration checks still required
 
 1. Run `uv run --extra dev pytest` and `uv run --extra dev ruff check .`.
-2. Compile native Swift backend on macOS through `uv run gaincraft inspect ...`.
+2. Compile native Swift backend on macOS through `uv run luvix inspect ...`.
 3. Extract Trinity fixture and verify P3 ICC and orientation.
 4. Round trip untouched base and map; compare metadata and decoded gain pixels.
 5. Test Photoshop-edited base and map independently.
