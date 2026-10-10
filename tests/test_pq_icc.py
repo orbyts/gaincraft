@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 import tifffile
 
-from gaincraft.hdr.pq_icc import make_pq_icc
-from gaincraft.hdr.tiff import HDRTIFFError, write_hdr_tiff
+from luvix.hdr.pq_icc import make_pq_icc
+from luvix.hdr.tiff import HDRTIFFError, write_hdr_tiff
 
 
 def matrix_icc() -> bytes:

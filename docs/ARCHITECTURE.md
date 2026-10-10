@@ -1,6 +1,6 @@
 # Architecture and interoperability
 
-Gaincraft aims to be a format-aware Swiss Army knife for HDR gain-map images. Separate capture backends from gain-map representation, color management, raster export, and CLI.
+Luvix aims to be a format-aware Swiss Army knife for HDR gain-map images. Separate capture backends from gain-map representation, color management, raster export, and CLI.
 
 ```text
 Apple HEIC + auxiliary gain map

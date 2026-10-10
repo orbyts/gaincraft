@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gaincraft.doctor import _cloudinary_credentials_configured
+from luvix.doctor import _cloudinary_credentials_configured
 
 
 def test_partial_cloudinary_credentials_are_not_configured(monkeypatch) -> None:

@@ -10,7 +10,7 @@ from importlib.metadata import PackageNotFoundError, version
 from typing import Any
 
 HDR_RELEASE = "0.0.2"
-HDR_NOTICE = f"HDR processing begins in Gaincraft {HDR_RELEASE}."
+HDR_NOTICE = f"HDR processing begins in Luvix {HDR_RELEASE}."
 
 
 def _distribution_version(distribution: str) -> str | None:
@@ -63,14 +63,14 @@ def _pyvips_capabilities() -> tuple[dict[str, Any], dict[str, Any], dict[str, bo
     return pyvips_result, libvips_result, operations
 
 
-def collect_diagnostics(gaincraft_version: str) -> dict[str, Any]:
+def collect_diagnostics(luvix_version: str) -> dict[str, Any]:
     """Collect diagnostics without modifying files or revealing credential values."""
     pyvips, libvips, operations = _pyvips_capabilities()
     cloudinary_version = _distribution_version("cloudinary")
     ultrahdr_library = find_library("ultrahdr")
 
     return {
-        "gaincraft": {"release": "bootstrap", "version": gaincraft_version},
+        "luvix": {"release": "bootstrap", "version": luvix_version},
         "python": {
             "implementation": platform.python_implementation(),
             "version": platform.python_version(),

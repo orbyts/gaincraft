@@ -9,15 +9,15 @@ from importlib.resources import files
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from gaincraft.backends.apple.bridge import BackendError
+from luvix.backends.apple.bridge import BackendError
 
 
 def linear_display_p3_icc() -> bytes:
     if platform.system() != "Darwin":
         raise BackendError("Linear Display P3 ICC extraction requires macOS")
-    swift = Path(str(files("gaincraft.backends.apple").joinpath("icc_profile.swift")))
+    swift = Path(str(files("luvix.backends.apple").joinpath("icc_profile.swift")))
     digest = hashlib.sha256(swift.read_bytes()).hexdigest()[:16]
-    binary = Path.home() / ".cache" / "gaincraft" / f"icc-profile-{digest}"
+    binary = Path.home() / ".cache" / "luvix" / f"icc-profile-{digest}"
     if not binary.exists():
         binary.parent.mkdir(parents=True, exist_ok=True)
         result = subprocess.run(
@@ -28,7 +28,7 @@ def linear_display_p3_icc() -> bytes:
         )
         if result.returncode:
             raise BackendError(f"ICC Swift compilation failed:\n{result.stderr}")
-    with TemporaryDirectory(prefix="gaincraft-icc-") as directory:
+    with TemporaryDirectory(prefix="luvix-icc-") as directory:
         destination = Path(directory) / "linear-display-p3.icc"
         result = subprocess.run(
             [str(binary), str(destination)],
@@ -58,9 +58,9 @@ def _linear_srgb_icc() -> bytes:
     from importlib.resources import files
     from tempfile import TemporaryDirectory
 
-    swift = Path(str(files("gaincraft.backends.apple").joinpath("icc_profile.swift")))
+    swift = Path(str(files("luvix.backends.apple").joinpath("icc_profile.swift")))
     digest = hashlib.sha256(swift.read_bytes()).hexdigest()[:16]
-    binary = Path.home() / ".cache" / "gaincraft" / f"icc-profile-{digest}"
+    binary = Path.home() / ".cache" / "luvix" / f"icc-profile-{digest}"
     if not binary.exists():
         binary.parent.mkdir(parents=True, exist_ok=True)
         result = subprocess.run(
@@ -68,7 +68,7 @@ def _linear_srgb_icc() -> bytes:
         )
         if result.returncode:
             raise BackendError(result.stderr)
-    with TemporaryDirectory(prefix="gaincraft-icc-") as directory:
+    with TemporaryDirectory(prefix="luvix-icc-") as directory:
         destination = Path(directory) / "linear-srgb.icc"
         result = subprocess.run(
             [str(binary), str(destination), "srgb"], capture_output=True, text=True

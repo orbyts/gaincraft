@@ -5,7 +5,7 @@ from __future__ import annotations
 import struct
 from pathlib import Path
 
-from gaincraft.hdr.tiff import HDRTIFFError
+from luvix.hdr.tiff import HDRTIFFError
 
 # CICP primaries: 12=P3-D65, 1=BT.709/sRGB, 9=BT.2020.
 _EXPECTED_PRIMARIES = {

@@ -9,8 +9,8 @@ from typing import Literal
 
 import numpy as np
 
-from gaincraft.backends.apple.hdr_raster import render_hdr_raster
-from gaincraft.hdr.tiff import HDRTIFFError, write_hdr_tiff
+from luvix.backends.apple.hdr_raster import render_hdr_raster
+from luvix.hdr.tiff import HDRTIFFError, write_hdr_tiff
 
 
 def export_apple_hdr_tiff(
@@ -36,7 +36,7 @@ def export_apple_hdr_tiff(
         raise FileNotFoundError(source)
     if bit_depth == 16 and reference_white_nits is None:
         raise HDRTIFFError("PQ requires --reference-white")
-    with tempfile.TemporaryDirectory(prefix="gaincraft-hdr-") as temp:
+    with tempfile.TemporaryDirectory(prefix="luvix-hdr-") as temp:
         prefix = Path(temp) / "hdr"
         render_hdr_raster(source, prefix)
         info = json.loads(prefix.with_suffix(".json").read_text())
@@ -60,15 +60,15 @@ def export_apple_hdr_tiff(
             # Report explicitly; do not modify the source image.
             np.maximum(rgb, 0, out=rgb)
         if external_pq_icc is not None:
-            from gaincraft.hdr.pq_profile import load_external_pq_icc
+            from luvix.hdr.pq_profile import load_external_pq_icc
 
             icc_profile = load_external_pq_icc(external_pq_icc, info["source_primaries"])
         elif embed_icc:
-            from gaincraft.backends.apple.icc_profile import source_linear_icc
+            from luvix.backends.apple.icc_profile import source_linear_icc
 
             icc_profile = source_linear_icc(info["color_space"])
             if bit_depth == 16:
-                from gaincraft.hdr.pq_icc import make_pq_icc
+                from luvix.hdr.pq_icc import make_pq_icc
 
                 icc_profile = make_pq_icc(icc_profile)
         else:

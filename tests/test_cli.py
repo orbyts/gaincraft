@@ -4,8 +4,8 @@ import json
 
 from typer.testing import CliRunner
 
-from gaincraft import __version__
-from gaincraft.cli import app
+from luvix import __version__
+from luvix.cli import app
 
 runner = CliRunner()
 
@@ -14,7 +14,7 @@ def test_version_is_exact() -> None:
     result = runner.invoke(app, ["--version"])
 
     assert result.exit_code == 0
-    assert result.stdout == f"gaincraft {__version__}\n"
+    assert result.stdout == f"luvix {__version__}\n"
 
 
 def test_doctor_reports_bootstrap_scope() -> None:
@@ -25,7 +25,7 @@ def test_doctor_reports_bootstrap_scope() -> None:
     assert "Python" in result.stdout
     assert "uhdrload" in result.stdout
     assert "uhdrsave" in result.stdout
-    assert "HDR processing begins in Gaincraft 0.0.2." in result.stdout
+    assert "HDR processing begins in Luvix 0.0.2." in result.stdout
 
 
 def test_doctor_json_has_stable_contract() -> None:
@@ -33,7 +33,7 @@ def test_doctor_json_has_stable_contract() -> None:
 
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    assert payload["gaincraft"] == {"release": "bootstrap", "version": __version__}
+    assert payload["luvix"] == {"release": "bootstrap", "version": __version__}
     assert payload["bootstrap"] == {"ready": True}
     assert payload["hdr_processing"]["implemented"] is False
     assert payload["hdr_processing"]["begins_in"] == "0.0.2"

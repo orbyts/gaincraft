@@ -8,16 +8,16 @@ import subprocess
 from importlib.resources import files
 from pathlib import Path
 
-from gaincraft.backends.apple.bridge import BackendError
+from luvix.backends.apple.bridge import BackendError
 
 
 def run_hdr_probe(source: Path, samples: int) -> str:
     """Return JSON from the native HDR-aware decode probe."""
     if platform.system() != "Darwin":
         raise BackendError("HDR-aware ImageIO decoding requires macOS")
-    swift = Path(str(files("gaincraft.backends.apple").joinpath("hdr_probe.swift")))
+    swift = Path(str(files("luvix.backends.apple").joinpath("hdr_probe.swift")))
     digest = hashlib.sha256(swift.read_bytes()).hexdigest()[:16]
-    binary = Path.home() / ".cache" / "gaincraft" / f"hdr-probe-{digest}"
+    binary = Path.home() / ".cache" / "luvix" / f"hdr-probe-{digest}"
     if not binary.exists():
         binary.parent.mkdir(parents=True, exist_ok=True)
         result = subprocess.run(

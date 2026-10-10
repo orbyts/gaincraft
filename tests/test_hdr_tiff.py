@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import tifffile
 
-from gaincraft.hdr.tiff import HDRTIFFError, decode_pq, write_hdr_tiff
+from luvix.hdr.tiff import HDRTIFFError, decode_pq, write_hdr_tiff
 
 
 def test_float32_linear_preserves_hdr_and_negative(tmp_path):

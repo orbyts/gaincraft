@@ -1,4 +1,4 @@
-"""Gaincraft's bootstrap command-line interface."""
+"""Luvix's bootstrap command-line interface."""
 
 from __future__ import annotations
 
@@ -11,12 +11,12 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from gaincraft import __version__
-from gaincraft.backends.apple.bridge import BackendError, run_backend
-from gaincraft.doctor import HDR_NOTICE, collect_diagnostics
+from luvix import __version__
+from luvix.backends.apple.bridge import BackendError, run_backend
+from luvix.doctor import HDR_NOTICE, collect_diagnostics
 
 app = typer.Typer(
-    name="gaincraft",
+    name="luvix",
     help="Inspect, extract, rebuild, validate, and convert HDR gain-map images.",
     no_args_is_help=True,
 )
@@ -26,7 +26,7 @@ console = Console()
 def package_version() -> str:
     """Return installed metadata when available, with a source-tree fallback."""
     try:
-        return version("gaincraft")
+        return version("luvix")
     except PackageNotFoundError:
         return __version__
 
@@ -34,7 +34,7 @@ def package_version() -> str:
 def version_callback(value: bool) -> None:
     """Print the package version for Typer's eager option callback."""
     if value:
-        typer.echo(f"gaincraft {package_version()}")
+        typer.echo(f"luvix {package_version()}")
         raise typer.Exit
 
 
@@ -47,7 +47,7 @@ def main(
         ),
     ] = False,
 ) -> None:
-    """Gaincraft 0.0.1 is a bootstrap release; HDR processing begins in 0.0.2."""
+    """Luvix 0.0.1 is a bootstrap release; HDR processing begins in 0.0.2."""
 
 
 def _display_value(value: Any) -> str:
@@ -71,7 +71,7 @@ def doctor(
         typer.echo(json.dumps(diagnostics, indent=2, sort_keys=True))
         return
 
-    table = Table(title=f"Gaincraft {diagnostics['gaincraft']['version']} doctor")
+    table = Table(title=f"Luvix {diagnostics['luvix']['version']} doctor")
     table.add_column("Capability")
     table.add_column("Status")
     table.add_row("Bootstrap CLI", "ready")
@@ -155,7 +155,7 @@ def inspect_hdr(
     samples: Annotated[int, typer.Option("--samples", min=1, max=64)] = 16,
 ) -> None:
     """Probe Apple's HDR-aware decode into extended linear Display P3 (macOS)."""
-    from gaincraft.backends.apple.hdr_probe import run_hdr_probe
+    from luvix.backends.apple.hdr_probe import run_hdr_probe
 
     try:
         typer.echo(run_hdr_probe(source, samples))
@@ -183,8 +183,8 @@ def export_tiff(
     ] = False,
 ) -> None:
     """Export HDR TIFF with source primaries (PQ ICC remains experimental)."""
-    from gaincraft.hdr.export import export_apple_hdr_tiff
-    from gaincraft.hdr.tiff import HDRTIFFError
+    from luvix.hdr.export import export_apple_hdr_tiff
+    from luvix.hdr.tiff import HDRTIFFError
 
     if icc_profile is not None and (bit_depth, transfer) != (16, "pq"):
         raise typer.BadParameter("--icc-profile requires --bit-depth 16 --transfer pq")

@@ -24,7 +24,7 @@ Produce a linear-light HDR RGB buffer from an Apple gain-map HEIC, with explicit
 
 ## Transfer functions
 
-`gaincraft.hdr.pq` provides standalone ST 2084 reference encode/decode functions for **absolute luminance** in cd/m². These functions are not gain-map decoders and must not be applied to uncalibrated map bytes or non-linear RGB values as if they were linear luminance.
+`luvix.hdr.pq` provides standalone ST 2084 reference encode/decode functions for **absolute luminance** in cd/m². These functions are not gain-map decoders and must not be applied to uncalibrated map bytes or non-linear RGB values as if they were linear luminance.
 
 - PQ maps absolute luminance in [0, 10000] cd/m² to normalized code values in [0, 1].
 - PQ is applied to correctly scaled **linear RGB channels** under a defined color encoding. A valid profile must identify both primaries and PQ transfer; the source's SDR Display P3 ICC profile is not valid for PQ-encoded pixels.

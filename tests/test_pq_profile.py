@@ -4,8 +4,8 @@ import struct
 
 import pytest
 
-from gaincraft.hdr.pq_profile import load_external_pq_icc
-from gaincraft.hdr.tiff import HDRTIFFError
+from luvix.hdr.pq_profile import load_external_pq_icc
+from luvix.hdr.tiff import HDRTIFFError
 
 
 def _profile(cicp: tuple[int, int, int, int]) -> bytes:
