@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "luvix"
-version = "0.1.1"
+version = "0.1.2"
 description = "A CLI for validated HDR gain-map image derivative workflows."
 readme = "README.md"
 requires-python = ">=3.11"
