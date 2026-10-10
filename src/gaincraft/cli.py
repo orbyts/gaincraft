@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
 from typing import Annotated, Any
 
 import typer
@@ -11,11 +12,12 @@ from rich.console import Console
 from rich.table import Table
 
 from gaincraft import __version__
+from gaincraft.backends.apple.bridge import BackendError, run_backend
 from gaincraft.doctor import HDR_NOTICE, collect_diagnostics
 
 app = typer.Typer(
     name="gaincraft",
-    help="Prepare for validated HDR gain-map workflows. HDR processing begins in 0.0.2.",
+    help="Inspect, extract, rebuild, validate, and convert HDR gain-map images.",
     no_args_is_help=True,
 )
 console = Console()
@@ -94,3 +96,113 @@ def doctor(
     table.add_row("HDR processing", "not implemented")
     console.print(table)
     console.print(HDR_NOTICE)
+
+
+def _native(*args: str) -> str:
+    try:
+        return run_backend(*args)
+    except BackendError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+
+
+@app.command()
+def inspect(source: Path) -> None:
+    """Inspect Apple HEIC HDR base and gain-map layout (macOS)."""
+    typer.echo(_native("inspect", str(source)))
+
+
+@app.command()
+def extract(source: Path, output: Annotated[Path, typer.Option("--output", "-o")]) -> None:
+    """Extract editable base.png, gainmap.png and manifest.json."""
+    typer.echo(_native("extract", str(source), str(output)))
+
+
+@app.command()
+def rebuild(
+    source: Annotated[Path, typer.Option("--source")],
+    output: Annotated[Path, typer.Option("--output", "-o")],
+    base: Annotated[Path | None, typer.Option("--base")] = None,
+    gainmap: Annotated[Path | None, typer.Option("--gainmap")] = None,
+) -> None:
+    """Rebuild Apple HDR HEIC, replacing either or both components."""
+    if base is None and gainmap is None:
+        typer.echo("Error: specify --base and/or --gainmap", err=True)
+        raise typer.Exit(2)
+    typer.echo(
+        _native(
+            "rebuild",
+            str(source),
+            str(base) if base else "-",
+            str(gainmap) if gainmap else "-",
+            str(output),
+        )
+    )
+
+
+@app.command()
+def validate(
+    source: Annotated[Path, typer.Option("--source")],
+    output: Annotated[Path, typer.Option("--output")],
+) -> None:
+    """Check core HDR structure against the source (not pixel equivalence)."""
+    typer.echo(_native("validate", str(source), str(output)))
+
+
+@app.command("inspect-hdr")
+def inspect_hdr(
+    source: Path,
+    samples: Annotated[int, typer.Option("--samples", min=1, max=64)] = 16,
+) -> None:
+    """Probe Apple's HDR-aware decode into extended linear Display P3 (macOS)."""
+    from gaincraft.backends.apple.hdr_probe import run_hdr_probe
+
+    try:
+        typer.echo(run_hdr_probe(source, samples))
+    except BackendError as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+
+
+# M2 experimental TIFF export. Do not claim color-managed Photoshop equivalence.
+export_app = typer.Typer(help="Export reconstructed HDR images to high-precision raster formats")
+app.add_typer(export_app, name="export")
+
+
+@export_app.command("tiff")
+def export_tiff(
+    source: Path,
+    output: Annotated[Path, typer.Option("--output", "-o")],
+    bit_depth: Annotated[int, typer.Option("--bit-depth")],
+    transfer: Annotated[str, typer.Option("--transfer")],
+    color_space: Annotated[str, typer.Option("--color-space")] = "source",
+    reference_white: Annotated[float | None, typer.Option("--reference-white")] = None,
+    icc_profile: Annotated[Path | None, typer.Option("--icc-profile")] = None,
+    experimental_untagged: Annotated[
+        bool, typer.Option("--experimental-untagged", help="Acknowledge missing PQ/linear ICC")
+    ] = False,
+) -> None:
+    """Export HDR TIFF with source primaries (PQ ICC remains experimental)."""
+    from gaincraft.hdr.export import export_apple_hdr_tiff
+    from gaincraft.hdr.tiff import HDRTIFFError
+
+    if icc_profile is not None and (bit_depth, transfer) != (16, "pq"):
+        raise typer.BadParameter("--icc-profile requires --bit-depth 16 --transfer pq")
+    if icc_profile is not None and experimental_untagged:
+        raise typer.BadParameter("--icc-profile conflicts with --experimental-untagged")
+    if color_space != "source":
+        raise typer.BadParameter("Only --color-space source is supported")
+    try:
+        report = export_apple_hdr_tiff(
+            source,
+            output,
+            bit_depth=bit_depth,
+            transfer=transfer,
+            reference_white_nits=reference_white,
+            embed_icc=not experimental_untagged,
+            external_pq_icc=icc_profile,
+        )
+    except (BackendError, HDRTIFFError, OSError, ValueError) as exc:
+        typer.echo(f"Error: {exc}", err=True)
+        raise typer.Exit(1) from exc
+    typer.echo(json.dumps(report, indent=2, sort_keys=True))

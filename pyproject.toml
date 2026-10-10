@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling>=1.31"]
+requires = ["hatchling==1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
 name = "gaincraft"
-version = "0.0.1"
+version = "0.1.0"
 description = "A CLI for validated HDR gain-map image derivative workflows."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -26,7 +26,9 @@ classifiers = [
   "Topic :: Utilities",
 ]
 dependencies = [
+  "numpy>=2.4.6",
   "rich>=15,<16",
+  "tifffile>=2026.3.3",
   "typer>=0.27,<1",
 ]
 
@@ -60,6 +62,9 @@ include = [
 [tool.hatch.build.targets.wheel]
 packages = ["src/gaincraft"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"src/gaincraft/backends/apple/imageio.swift" = "gaincraft/backends/apple/imageio.swift"
+
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers"
 testpaths = ["tests"]
@@ -70,3 +75,9 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
+
+[dependency-groups]
+dev = [
+    "packaging>=26.3",
+    "twine>=6.2.0",
+]

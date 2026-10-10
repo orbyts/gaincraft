@@ -4,6 +4,7 @@ import json
 
 from typer.testing import CliRunner
 
+from gaincraft import __version__
 from gaincraft.cli import app
 
 runner = CliRunner()
@@ -13,7 +14,7 @@ def test_version_is_exact() -> None:
     result = runner.invoke(app, ["--version"])
 
     assert result.exit_code == 0
-    assert result.stdout == "gaincraft 0.0.1\n"
+    assert result.stdout == f"gaincraft {__version__}\n"
 
 
 def test_doctor_reports_bootstrap_scope() -> None:
@@ -32,7 +33,7 @@ def test_doctor_json_has_stable_contract() -> None:
 
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    assert payload["gaincraft"] == {"release": "bootstrap", "version": "0.0.1"}
+    assert payload["gaincraft"] == {"release": "bootstrap", "version": __version__}
     assert payload["bootstrap"] == {"ready": True}
     assert payload["hdr_processing"]["implemented"] is False
     assert payload["hdr_processing"]["begins_in"] == "0.0.2"
@@ -59,4 +60,4 @@ def test_no_args_shows_help() -> None:
     result = runner.invoke(app)
 
     assert result.exit_code == 2
-    assert "HDR processing begins in 0.0.2" in result.stdout
+    assert "Inspect, extract, rebuild, validate, and convert HDR gain-map images." in result.stdout
