@@ -2,7 +2,7 @@
 
 Luvix is a command-line utility for inspecting HDR gain-map photographs, extracting their components, rebuilding edited Apple HDR captures, and exporting HDR TIFFs for image editing.
 
-> **Current support (v0.1.1):** Apple gain-map HEIC on macOS. Not every HEIC has a gain map. Apple JPEG gain maps, ISO 21496-1, Ultra HDR, and arbitrary color-space conversions are future work.
+> **Current support (v0.1.2):** Apple gain-map HEIC on macOS. Not every HEIC has a gain map. Apple JPEG gain maps, ISO 21496-1, Ultra HDR, and arbitrary color-space conversions are future work.
 
 ## Requirements
 

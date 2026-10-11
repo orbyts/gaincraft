@@ -17,15 +17,16 @@ def test_version_is_exact() -> None:
     assert result.stdout == f"luvix {__version__}\n"
 
 
-def test_doctor_reports_bootstrap_scope() -> None:
+def test_doctor_reports_current_hdr_capabilities() -> None:
     result = runner.invoke(app, ["doctor"])
 
     assert result.exit_code == 0
-    assert "Bootstrap CLI" in result.stdout
-    assert "Python" in result.stdout
+    assert "HDR gain-map inspection" in result.stdout
+    assert "Python runtime" in result.stdout
     assert "uhdrload" in result.stdout
     assert "uhdrsave" in result.stdout
-    assert "HDR processing begins in Luvix 0.0.2." in result.stdout
+    assert "32-bit linear HDR TIFF" in result.stdout
+    assert "16-bit PQ HDR TIFF" in result.stdout
 
 
 def test_doctor_json_has_stable_contract() -> None:
@@ -33,10 +34,17 @@ def test_doctor_json_has_stable_contract() -> None:
 
     assert result.exit_code == 0
     payload = json.loads(result.stdout)
-    assert payload["luvix"] == {"release": "bootstrap", "version": __version__}
-    assert payload["bootstrap"] == {"ready": True}
-    assert payload["hdr_processing"]["implemented"] is False
-    assert payload["hdr_processing"]["begins_in"] == "0.0.2"
+    assert payload["luvix"] == {"release": "functional", "version": __version__}
+    assert payload["hdr_processing"]["implemented"] is True
+    assert payload["hdr_processing"]["linear32_tiff"] is True
+    assert payload["hdr_processing"]["pq16_tiff"] is True
+    assert payload["hdr_processing"]["pq16_external_icc_required"] is True
+    assert set(payload["apple_hdr"]) == {
+        "implemented",
+        "platform_supported",
+        "swift_compiler_available",
+        "runtime_ready",
+    }
     assert set(payload["ultrahdr"]) == {"library_discoverable", "uhdrload", "uhdrsave"}
 
 

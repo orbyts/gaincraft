@@ -13,7 +13,7 @@ from rich.table import Table
 
 from luvix import __version__
 from luvix.backends.apple.bridge import BackendError, run_backend
-from luvix.doctor import HDR_NOTICE, collect_diagnostics
+from luvix.doctor import collect_diagnostics
 
 app = typer.Typer(
     name="luvix",
@@ -47,7 +47,7 @@ def main(
         ),
     ] = False,
 ) -> None:
-    """Luvix 0.0.1 is a bootstrap release; HDR processing begins in 0.0.2."""
+    """Inspect, extract, rebuild, validate, and convert HDR gain-map images."""
 
 
 def _display_value(value: Any) -> str:
@@ -65,7 +65,7 @@ def doctor(
         typer.Option("--json", help="Emit machine-readable diagnostics."),
     ] = False,
 ) -> None:
-    """Report bootstrap and future HDR runtime capabilities without modifying files."""
+    """Report runtime prerequisites and implemented HDR capabilities."""
     diagnostics = collect_diagnostics(package_version())
     if as_json:
         typer.echo(json.dumps(diagnostics, indent=2, sort_keys=True))
@@ -74,28 +74,27 @@ def doctor(
     table = Table(title=f"Luvix {diagnostics['luvix']['version']} doctor")
     table.add_column("Capability")
     table.add_column("Status")
-    table.add_row("Bootstrap CLI", "ready")
     table.add_row(
-        "Python",
+        "Python runtime",
         f"{diagnostics['python']['implementation']} {diagnostics['python']['version']}",
     )
+    apple = diagnostics["apple_hdr"]
+    table.add_row(
+        "Apple HDR backend",
+        "ready" if apple["runtime_ready"] else "unavailable on this runtime",
+    )
+    table.add_row("HDR gain-map inspection", "implemented")
+    table.add_row("Component extraction", "implemented")
+    table.add_row("HEIC reconstruction", "implemented")
+    table.add_row("HDR validation", "implemented")
+    table.add_row("32-bit linear HDR TIFF", "implemented")
+    table.add_row("16-bit PQ HDR TIFF", "implemented")
+    table.add_row("16-bit PQ ICC", "external compatible profile required")
     table.add_row("pyvips", _display_value(diagnostics["pyvips"]["version"]))
-    table.add_row("pyvips importable", _display_value(diagnostics["pyvips"]["importable"]))
     table.add_row("libvips", _display_value(diagnostics["libvips"]["version"]))
     table.add_row("uhdrload", _display_value(diagnostics["ultrahdr"]["uhdrload"]))
     table.add_row("uhdrsave", _display_value(diagnostics["ultrahdr"]["uhdrsave"]))
-    table.add_row(
-        "libultrahdr discoverable",
-        _display_value(diagnostics["ultrahdr"]["library_discoverable"]),
-    )
-    table.add_row("Cloudinary SDK", _display_value(diagnostics["cloudinary"]["sdk_version"]))
-    table.add_row(
-        "Cloudinary credentials configured",
-        _display_value(diagnostics["cloudinary"]["credentials_configured"]),
-    )
-    table.add_row("HDR processing", "not implemented")
     console.print(table)
-    console.print(HDR_NOTICE)
 
 
 def _native(*args: str) -> str:
