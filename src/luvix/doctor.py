@@ -1,16 +1,14 @@
-"""Read-only runtime diagnostics for the bootstrap release."""
+"""Read-only runtime and HDR capability diagnostics."""
 
 from __future__ import annotations
 
 import os
 import platform
+import shutil
 from ctypes.util import find_library
 from importlib import import_module
 from importlib.metadata import PackageNotFoundError, version
 from typing import Any
-
-HDR_RELEASE = "0.0.2"
-HDR_NOTICE = f"HDR processing begins in Luvix {HDR_RELEASE}."
 
 
 def _distribution_version(distribution: str) -> str | None:
@@ -45,16 +43,13 @@ def _pyvips_capabilities() -> tuple[dict[str, Any], dict[str, Any], dict[str, bo
     }
     libvips_result: dict[str, Any] = {"available": False, "version": None}
     operations = {"uhdrload": False, "uhdrsave": False}
-
     if pyvips_version is None:
         return pyvips_result, libvips_result, operations
-
     try:
         pyvips = import_module("pyvips")
         libvips_version = ".".join(str(pyvips.version(index)) for index in range(3))
     except (ImportError, OSError, AttributeError, TypeError):
         return pyvips_result, libvips_result, operations
-
     pyvips_result["importable"] = True
     libvips_result.update(available=True, version=libvips_version)
     operations = {
@@ -68,12 +63,29 @@ def collect_diagnostics(luvix_version: str) -> dict[str, Any]:
     pyvips, libvips, operations = _pyvips_capabilities()
     cloudinary_version = _distribution_version("cloudinary")
     ultrahdr_library = find_library("ultrahdr")
-
+    is_macos = platform.system() == "Darwin"
+    swift_available = shutil.which("swiftc") is not None
     return {
-        "luvix": {"release": "bootstrap", "version": luvix_version},
+        "luvix": {"release": "functional", "version": luvix_version},
         "python": {
             "implementation": platform.python_implementation(),
             "version": platform.python_version(),
+        },
+        "apple_hdr": {
+            "implemented": True,
+            "platform_supported": is_macos,
+            "swift_compiler_available": swift_available,
+            "runtime_ready": is_macos and swift_available,
+        },
+        "hdr_processing": {
+            "implemented": True,
+            "inspection": True,
+            "extraction": True,
+            "rebuild": True,
+            "validation": True,
+            "linear32_tiff": True,
+            "pq16_tiff": True,
+            "pq16_external_icc_required": True,
         },
         "pyvips": pyvips,
         "libvips": libvips,
@@ -87,10 +99,4 @@ def collect_diagnostics(luvix_version: str) -> dict[str, Any]:
             "sdk_installed": cloudinary_version is not None,
             "sdk_version": cloudinary_version,
         },
-        "hdr_processing": {
-            "begins_in": HDR_RELEASE,
-            "implemented": False,
-            "notice": HDR_NOTICE,
-        },
-        "bootstrap": {"ready": True},
     }

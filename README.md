@@ -8,33 +8,31 @@
 
 The tested backend processes Apple HDR gain-map **HEIC** captures on **macOS** using ImageIO/Core Image and Swift. It supports `inspect`, `extract`, `rebuild`, `validate`, `inspect-hdr`, and `export tiff`. A 32-bit linear float TIFF with matching source-supported ICC has been validated in Photoshop. The 16-bit PQ TIFF was visually validated with an **externally supplied P3 PQ ICC**. General JPEG gain-map input, ISO/Ultra HDR interoperability, and arbitrary ICC source profiles are roadmap items, **not current supported features**.
 
-## Quick start (source checkout)
+## Install
+
+Recommended for a command-line application:
 
 ```bash
-uv sync --extra dev
-uv run luvix doctor
-uv run luvix inspect ~/Pictures/photo.HEIC
-uv run luvix extract ~/Pictures/photo.HEIC --output ~/Pictures/work/photo
-uv run luvix rebuild --source ~/Pictures/photo.HEIC \
-  --base ~/Pictures/work/photo/base.png \
-  --output ~/Pictures/work/photo_rebuilt.HEIC
-uv run luvix validate --source ~/Pictures/photo.HEIC \
-  --output ~/Pictures/work/photo_rebuilt.HEIC
-uv run luvix export tiff ~/Pictures/photo.HEIC \
+uv tool install luvix
+luvix --version
+```
+
+Alternatively, use `pipx install luvix`, or install `luvix` with pip inside an activated virtual environment.
+
+The installed command is `luvix`. `uv run luvix` is only for development from a source checkout.
+
+## Quick start
+
+```bash
+luvix doctor
+luvix inspect ~/Pictures/photo.HEIC
+luvix extract ~/Pictures/photo.HEIC --output ~/Pictures/work/photo
+luvix export tiff ~/Pictures/photo.HEIC \
   --bit-depth 32 --transfer linear --color-space source \
   --output ~/Pictures/work/photo_linear32.tif
 ```
 
-For 16-bit PQ output, use a compatible external PQ ICC and explicit reference white:
-
-```bash
-uv run luvix export tiff ~/Pictures/photo.HEIC \
-  --bit-depth 16 --transfer pq --color-space source \
-  --reference-white 203 --icc-profile ~/ColorProfiles/P3_PQ_Reference.icc \
-  --output ~/Pictures/work/photo_pq16.tif
-```
-
-Do not assume the example profile is bundled. Confirm your exact CLI options with `uv run luvix export tiff --help`. Input captures are never modified, but HEIC rebuild may re-encode pixels.
+For 16-bit PQ output, supply a compatible external PQ ICC and an explicit reference white. See the user guide for the full workflow and current support boundaries.
 
 ## Documentation
 

@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.1.2] - 2026-10-10
+
+### Changed
+- Reworked the user guide around the installed `luvix` CLI instead of
+  source-checkout `uv run` commands.
+- Added clearer installation and quick-start documentation for PyPI users.
+- Updated `luvix doctor` to report the HDR capabilities implemented in Luvix.
+- Added macOS and Swift runtime readiness reporting for the Apple HDR backend.
+- Clarified that 16-bit PQ export currently requires a compatible external
+  PQ ICC profile.
+
+### Fixed
+- Removed obsolete bootstrap diagnostics claiming that HDR processing was
+  not implemented.
+- Removed the outdated "HDR processing begins in Luvix 0.0.2" message.
+
+### Notes
+- HDR decoding, reconstruction, TIFF encoding, PQ math, and color-management
+  algorithms are unchanged from v0.1.1.
+
+
+
 ## [0.1.0] - 2026-10-10
 
 ### Added
